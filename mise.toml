@@ -1,0 +1,29 @@
+[tasks.build]
+description = "実行バイナリをビルドする"
+env = { GOOS = "darwin", GOARCH = "arm64", CGO_ENABLED = 0 }
+run = ["make"]
+
+[tasks."show:header"]
+description = "Mach-O Headerを表示する"
+depends = ["build"]
+run = "otool -h ./dist/app.out"
+
+[tasks."show:load-command"]
+description = "Mach-O Load Commandを表示する"
+depends = ["build"]
+run = "otool -l ./dist/app.out"
+
+[tasks."show:entry"]
+description = "Applicationのエントリポイントを表示する"
+depends = ["build"]
+run = "otool -l ./dist/app.out | rg -A 4 'LC_MAIN|LC_UNIXTHREAD'"
+
+[tasks."show:text-segment"]
+description = "__TEXTセグメントの情報を表示する"
+depends = ["build"]
+run = "otool -l ./dist/app.out | rg -A 8 'segname __TEXT'"
+
+[tasks."asm:otool"]
+description = "otoolで逆アセンブルを行い、エントリポイント周辺を表示します。"
+depends = ["build"]
+run = "otool -arch arm64 -tvV ./dist/app.out | rg -B 1 -A 15 '100076cb0'"
